@@ -7,6 +7,10 @@ import { MagneticButton } from '../ui/MagneticButton';
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(3); // Mock notification count
+  const notificationRef = React.useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   const location = useLocation();
   
@@ -24,6 +28,62 @@ export const Header: React.FC = () => {
     });
     return unsubscribe;
   }, [scrollY]);
+
+  // Mock notifications data
+  useEffect(() => {
+    const mockNotifications = [
+      {
+        id: 1,
+        title: 'New Order Received',
+        message: 'You have received a new order for 50kg tomatoes',
+        time: '2 minutes ago',
+        type: 'order'
+      },
+      {
+        id: 2,
+        title: 'Price Update',
+        message: 'Tomato prices have increased by 15% in your area',
+        time: '1 hour ago',
+        type: 'price'
+      },
+      {
+        id: 3,
+        title: 'Weather Alert',
+        message: 'Heavy rain expected in your region tomorrow',
+        time: '3 hours ago',
+        type: 'weather'
+      }
+    ];
+    setNotifications(mockNotifications);
+  }, []);
+
+  const handleNotificationClick = () => {
+    setIsNotificationOpen(!isNotificationOpen);
+    if (!isNotificationOpen) {
+      setNotificationCount(0); // Clear notification count when opened
+    }
+  };
+
+  const handleNotificationClose = () => {
+    setIsNotificationOpen(false);
+  };
+
+  // Handle click outside notification dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    if (isNotificationOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isNotificationOpen]);
 
   const menuItems = [
     { label: 'Home', href: '/' },
@@ -94,18 +154,98 @@ export const Header: React.FC = () => {
             <Search className="w-5 h-5 text-gray-600" />
           </motion.button>
           
-          <motion.button
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 relative"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Bell className="w-5 h-5 text-gray-600" />
-            <motion.div
-              className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          </motion.button>
+          {/* Notification Bell */}
+          <div className="relative" ref={notificationRef}>
+            <motion.button
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 relative"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleNotificationClick}
+            >
+              <Bell className="w-5 h-5 text-gray-600" />
+              {notificationCount > 0 && (
+                <motion.div
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  {notificationCount}
+                </motion.div>
+              )}
+            </motion.button>
+
+            {/* Notification Dropdown */}
+            {isNotificationOpen && (
+              <motion.div
+                className="absolute right-0 top-12 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                    <button
+                      onClick={handleNotificationClose}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-6 text-center text-gray-500">
+                      No notifications
+                    </div>
+                  ) : (
+                    notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className="p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className={`w-2 h-2 rounded-full mt-2 ${
+                            notification.type === 'order' ? 'bg-green-500' :
+                            notification.type === 'price' ? 'bg-yellow-500' :
+                            'bg-blue-500'
+                          }`} />
+                          <div className="flex-1">
+                            <h4 className="text-sm font-medium text-gray-900">
+                              {notification.title}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {notification.message}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-2">
+                              {notification.time}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                
+                {notifications.length > 0 && (
+                  <div className="p-3 border-t border-gray-200">
+                    <button
+                      onClick={() => {
+                        setNotifications([]);
+                        setNotificationCount(0);
+                        handleNotificationClose();
+                      }}
+                      className="w-full text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                    >
+                      Mark all as read
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </div>
 
           <Link to="/login">
             <MagneticButton
@@ -157,6 +297,24 @@ export const Header: React.FC = () => {
             </motion.div>
           ))}
           
+          {/* Mobile Notification Bell */}
+          <div className="flex items-center justify-between py-2">
+            <span className="text-gray-700">Notifications</span>
+            <div className="relative">
+              <button
+                onClick={handleNotificationClick}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 relative"
+              >
+                <Bell className="w-5 h-5 text-gray-600" />
+                {notificationCount > 0 && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {notificationCount}
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+          
           <div className="pt-4 border-t border-gray-200">
             <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
               <MagneticButton variant="primary" className="w-full justify-center">
@@ -166,6 +324,78 @@ export const Header: React.FC = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Mobile Notification Dropdown */}
+      {isNotificationOpen && (
+        <motion.div
+          className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+              <button
+                onClick={handleNotificationClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="max-h-96 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">
+                No notifications
+              </div>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className="p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-start space-x-3">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      notification.type === 'order' ? 'bg-green-500' :
+                      notification.type === 'price' ? 'bg-yellow-500' :
+                      'bg-blue-500'
+                    }`} />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-gray-900">
+                        {notification.title}
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {notification.message}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        {notification.time}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          
+          {notifications.length > 0 && (
+            <div className="p-3 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setNotifications([]);
+                  setNotificationCount(0);
+                  handleNotificationClose();
+                }}
+                className="w-full text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors"
+              >
+                Mark all as read
+              </button>
+            </div>
+          )}
+        </motion.div>
+      )}
     </motion.header>
   );
 };
