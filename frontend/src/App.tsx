@@ -10,6 +10,7 @@ import { FeaturesPage } from './pages/FeaturesPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { QuantumSyncDashboardPage } from './pages/QuantumSyncDashboardPage';
+import LogisticsPage from './pages/LogisticsPage';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="dashboard/vendor/logistics" element={<LogisticsPage />} />
         </Routes>
       </div>
     </Router>
