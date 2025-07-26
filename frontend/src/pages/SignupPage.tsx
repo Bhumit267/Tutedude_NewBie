@@ -1,10 +1,36 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, ArrowLeft, Store, Tractor, Shuffle } from 'lucide-react';
+import { User, Mail, Lock, ArrowLeft, Store, Tractor, Shuffle, MapPin, ChevronDown } from 'lucide-react';
 import { MagneticButton } from '../components/ui/MagneticButton';
 
 type UserRole = 'vendor' | 'farmer' | 'hybrid';
+
+const locationData = {
+  'Delhi': ['Connaught Place', 'Chandni Chowk', 'Saket', 'Hauz Khas', 'Greater Kailash', 'Rajouri Garden', 'Janakpuri', 'Burari', 'Preet Vihar', 'Ghazipur'],
+  'Mumbai': ['Colaba', 'Fort', 'Bandra', 'Andheri', 'Juhu', 'Dadar', 'Lower Parel', 'Malad', 'Borivali', 'Chembur'],
+  'Bengaluru': ['MG Road', 'Koramangala', 'Jayanagar', 'Whitefield', 'Indiranagar', 'Yelahanka', 'Hebbal', 'HSR Layout', 'Rajajinagar', 'BTM Layout'],
+  'Hyderabad': ['Charminar', 'HITEC City', 'Gachibowli', 'Madhapur', 'Jubilee Hills', 'Banjara Hills', 'Ameerpet', 'Begumpet', 'Mehdipatnam'],
+  'Chennai': ['T. Nagar', 'Mylapore', 'Kilpauk', 'Adyar', 'Velachery', 'Porur', 'Anna Nagar', 'Tambaram', 'Ambattur'],
+  'Kolkata': ['Park Street', 'Esplanade', 'Dum Dum', 'Rajarhat', 'Ballygunge', 'Salt Lake', 'Behala', 'Tollygunge', 'New Town'],
+  'Ahmedabad': ['Manek Chowk', 'Satellite', 'Thaltej', 'Bopal', 'SG Highway', 'Gota', 'Vastrapur', 'Chandkheda'],
+  'Pune': ['Camp', 'Viman Nagar', 'Kalyani Nagar', 'Hadapsar', 'Kothrud', 'Baner', 'Wakad', 'Hinjewadi', 'Aundh'],
+  'Surat': ['Adajan', 'Katargam', 'Udhna', 'Piplod', 'Vesu', 'Pal', 'Rander'],
+  'Jaipur': ['C-Scheme', 'Malviya Nagar', 'Mansarovar', 'Raja Park', 'Vaishali Nagar', 'Tonk Road', 'Jhotwara'],
+  'Lucknow': ['Hazratganj', 'Gomti Nagar', 'Alambagh', 'Indira Nagar', 'Mahanagar', 'Aminabad', 'Chowk'],
+  'Indore': ['Vijay Nagar', 'Palasia', 'Rajwada', 'Sudama Nagar', 'Annapurna', 'Khajrana', 'Bhawarkuan'],
+  'Bhopal': ['MP Nagar', 'Arera Colony', 'New Market', 'Shahpura', 'Kolar Road', 'TT Nagar'],
+  'Nagpur': ['Sitabuldi', 'Dharampeth', 'Sadar', 'Civil Lines', 'Trimurti Nagar', 'Manish Nagar'],
+  'Kochi': ['MG Road', 'Kaloor', 'Edappally', 'Vyttila', 'Kakkanad', 'Fort Kochi', 'Aluva'],
+  'Coimbatore': ['Gandhipuram', 'Peelamedu', 'RS Puram', 'Saibaba Colony', 'Singanallur', 'Avinashi Road'],
+  'Chandigarh': ['Sector 17', 'Sector 22', 'Sector 35', 'Sector 43', 'Manimajra', 'Panchkula', 'Mohali'],
+  'Visakhapatnam': ['MVP Colony', 'Dwaraka Nagar', 'Gajuwaka', 'Maddilapalem', 'Seethammadhara'],
+  'Thiruvananthapuram': ['Palayam', 'Kowdiar', 'Pattom', 'Vellayambalam', 'Kazhakootam', 'Sreekariyam'],
+  'Patna': ['Boring Road', 'Kankarbagh', 'Rajendra Nagar', 'Bailey Road', 'Ashok Rajpath'],
+  'Guwahati': ['Paltan Bazar', 'Zoo Road', 'Beltola', 'Ganeshguri', 'Ulubari', 'Dispur'],
+  'Raipur': ['Pandri', 'Telibandha', 'Shankar Nagar', 'Devendra Nagar', 'Tatibandh'],
+  'Ranchi': ['Harmu', 'Lalpur', 'Kanke', 'Morabadi', 'Doranda']
+};
 
 export const SignupPage: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -14,6 +40,8 @@ export const SignupPage: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    city: '',
+    area: '',
   });
   const navigate = useNavigate();
 
@@ -49,12 +77,23 @@ export const SignupPage: React.FC = () => {
     setTimeout(() => setStep(2), 500);
   };
 
+  const handleCityChange = (city: string) => {
+    setFormData({ 
+      ...formData, 
+      city, 
+      area: '' // Reset area when city changes
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate registration
     await new Promise(resolve => setTimeout(resolve, 2000));
     navigate(`/dashboard/${selectedRole}`);
   };
+
+  const cities = Object.keys(locationData);
+  const areas = formData.city ? locationData[formData.city as keyof typeof locationData] : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
@@ -196,6 +235,53 @@ export const SignupPage: React.FC = () => {
                       placeholder="Create a password"
                       required
                     />
+                  </div>
+                </div>
+
+                {/* City Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <select
+                      value={formData.city}
+                      onChange={(e) => handleCityChange(e.target.value)}
+                      className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none bg-white"
+                      required
+                    >
+                      <option value="">Select your city</option>
+                      {cities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Area Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Area</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <select
+                      value={formData.area}
+                      onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+                      className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      required
+                      disabled={!formData.city}
+                    >
+                      <option value="">
+                        {formData.city ? 'Select your area' : 'Please select a city first'}
+                      </option>
+                      {areas.map((area) => (
+                        <option key={area} value={area}>
+                          {area}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                   </div>
                 </div>
 

@@ -5,7 +5,7 @@ import { MagneticButton } from '../../ui/MagneticButton';
 
 export const DemandForecast: React.FC = () => {
     const forecast = [
-        { item: 'Onions', predicted: 85, unit: 'kg' },
+        { item: 'Onions', predicted: 80, unit: 'kg' },
         { item: 'Tomatoes', predicted: 60, unit: 'kg' },
         { item: 'Potatoes', predicted: 75, unit: 'kg' },
         { item: 'Spices', predicted: 15, unit: 'kg' },
