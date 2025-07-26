@@ -112,7 +112,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 <Link
                   to={item.href}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 group ${
-                    location.pathname.startsWith(item.href)
+                    location.pathname === item.href
                       ? 'bg-orange-100 text-orange-600 font-semibold'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
